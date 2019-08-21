@@ -53,6 +53,9 @@ html, body{
 .content h3{
     margin:0;
 }
+.content h5{
+    margin:0;
+}
 .content span{
     opacity: .6;
 }
