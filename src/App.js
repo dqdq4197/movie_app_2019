@@ -2,24 +2,47 @@ import React from 'react';
 import axios from 'axios';
 import Movie from './Movie';
 import "./movie.css";
-import Search from './Search';
 
 class App extends React.Component {
-  state= {
-    isLoading: true,
-    movie:[],
-  };
 
+  constructor(props){
+    super(props);
+    this.state= {
+      isLoading: true,
+      keyword:'',
+      movies:[],
+    };
+  }
+
+  onChangehandler = (e) => {
+    this.setState({
+      keyword: e.target.value,
+    })
+  };
   getMovies = async ()=> {
     const {data: {data: {movies}}} = await axios.get("https://yts-proxy.now.sh/list_movies.json?sort_by=rating");
     console.log({movies});
-    this.setState({movies, isLoading:false});
+      this.setState({
+        movies,
+        isLoading:false,
+      });
   };
-  componentDidMount(){
+  componentWillMount() {
     this.getMovies();
   };
-
   render(){
+   
+    const searchComponent = (data) => {
+      data = data.filter(
+        (search) =>{
+            return (search.genres[0].toLowerCase()
+            .indexOf(this.state.keyword.toLowerCase()) > -1);
+        }
+    );
+      return data.map((search, i) => {
+        return (<Movie search={search} key={i}/>);
+      });
+    };
     const {isLoading, movies} = this.state;
     return(
       <section className="container">
@@ -28,29 +51,18 @@ class App extends React.Component {
           <span className="loader_text">Loading...</span>
         </div>
       ) : (
-        
-        <div className="movies">
-          <div>
-           {movies.map(movie => (
-             <Search
-                key = {movie.id}
-                genres = {movie.genres}
-              />
-            ))}
-          </div>
-           {movies.map(movie => (
-             <Movie
-                key = {movie.id}
-                id = {movie.id}
-                year = {movie.year}
-                title = {movie.title}
-                summary = {movie.summary}
-                poster = {movie.medium_cover_image}
-                genres = {movie.genres}
-                rating = {movie.rating}
-              /> 
-           ))}
+        <>
+        <div className="search">
+          장르 :<input 
+                name ="keyword" value={this.state.keyword}
+                 onChange={this.onChangehandler} 
+                 placeholder="장르검색">
+                 </input>
         </div>
+        <div className="movies">
+           {searchComponent(movies)}   
+        </div>
+        </>
         )}
       </section>
     );
